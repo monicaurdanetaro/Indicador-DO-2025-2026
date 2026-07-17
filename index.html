@@ -404,18 +404,17 @@ function buildFromRaw(raw){
 /* ============================================================
    HELPERS
    ============================================================ */
-function pctClass(p, threshold){
-  threshold = threshold || 90;
+function pctClass(p){
   if(p === null) return 'na';
-  if(p >= threshold) return 'ok';
-  if(p >= threshold*0.7) return 'mid';
+  if(p >= 80) return 'ok';
+  if(p >= 50) return 'mid';
   return 'low';
 }
 function pctChipClass(p){ return pctClass(p); }
 function barColor(p){
   if(p === null) return '#D8D3C6';
-  if(p >= 90) return 'var(--green)';
-  if(p >= 60) return 'var(--amber)';
+  if(p >= 80) return 'var(--green)';
+  if(p >= 50) return 'var(--amber)';
   return 'var(--red)';
 }
 function fmtPct(fd, ta){ if(!ta) return null; return Math.round((fd/ta)*1000)/10; }
@@ -692,25 +691,26 @@ function buildResumen(){
     </div>
   </div>`;
 
-  html += `<p class="eyebrow-label">Cumplimiento por nivel de cargo</p>`;
-  html += `<div class="panel"><div>${levelCards.map(l=>`
-    <div class="alert-row">
-      <div class="alert-label">${esc(l.label)}<div class="alert-sub">${l.people} persona(s) · ${l.fd}/${l.ta} formaciones</div></div>
-      <div class="alert-track"><div class="alert-fill" style="width:${Math.min(l.pct||0,100)}%; background:${barColor(l.pct)}"></div></div>
-      <div class="alert-pct" style="color:${barColor(l.pct)}">${l.pct===null?'—':l.pct+'%'}</div>
-    </div>`).join('')}
-  </div></div>`;
-
-  html += `<p class="eyebrow-label">Cumplimiento por área</p>`;
-  html += `<div class="panel" style="max-width:360px;">
-    <table>
-      <thead><tr><th>Área</th><th style="text-align:right;">%</th></tr></thead>
-      <tbody>
-        ${areaCards.map(a=>`
-          <tr><td>${esc(a.label)}</td><td style="text-align:right;"><span class="pct-chip ${pctChipClass(a.pct)}">${a.pct===null?'—':a.pct+'%'}</span></td></tr>
-        `).join('')}
-      </tbody>
-    </table>
+  html += `<p class="eyebrow-label">Cumplimiento por nivel de cargo y por área</p>`;
+  html += `<div class="side-by-side">
+    <div class="panel" style="margin-bottom:0;"><div class="panel-head"><h3>Nivel de cargo</h3></div><div>${levelCards.map(l=>`
+      <div class="alert-row">
+        <div class="alert-label">${esc(l.label)}<div class="alert-sub">${l.people} persona(s) · ${l.fd}/${l.ta} formaciones</div></div>
+        <div class="alert-track"><div class="alert-fill" style="width:${Math.min(l.pct||0,100)}%; background:${barColor(l.pct)}"></div></div>
+        <div class="alert-pct" style="color:${barColor(l.pct)}">${l.pct===null?'—':l.pct+'%'}</div>
+      </div>`).join('')}
+    </div></div>
+    <div class="panel" style="margin-bottom:0;">
+      <div class="panel-head"><h3>Área</h3></div>
+      <table>
+        <thead><tr><th>Área</th><th style="text-align:right;">%</th></tr></thead>
+        <tbody>
+          ${areaCards.map(a=>`
+            <tr><td>${esc(a.label)}</td><td style="text-align:right;"><span class="pct-chip ${pctChipClass(a.pct)}">${a.pct===null?'—':a.pct+'%'}</span></td></tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
   </div>`;
 
   html += `<div class="panel">
