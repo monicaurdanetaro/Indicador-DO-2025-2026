@@ -178,6 +178,7 @@
 
   /* alert rows */
   .alert-row{ display:flex; align-items:center; gap: 14px; padding: 11px 20px; border-bottom: 1px solid var(--gray-100); }
+  .alert-row.compact{ padding: 7px 20px; }
   .alert-row:last-child{ border-bottom:none; }
   .alert-label{ flex: 1 1 auto; font-size: 13px; font-weight:500; color: var(--gray-900); }
   .alert-sub{ font-size: 11.5px; color: var(--gray-400); font-weight:400; }
@@ -185,6 +186,8 @@
   .alert-fill{ height:100%; border-radius:999px; }
   .alert-pct{ width:48px; text-align:right; font-weight:600; font-size:12.5px; flex-shrink:0; }
   @media (max-width:560px){ .alert-track{ display:none; } }
+  .compact-table th{ padding: 7px 20px; }
+  .compact-table td{ padding: 6px 20px; }
 
   .search-card{ background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; margin: 0 0 22px; display:flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; }
   .search-card .field{ flex: 1 1 260px; min-width: 220px; }
@@ -709,15 +712,15 @@ function buildResumen(){
   html += `<p class="eyebrow-label">Cumplimiento por nivel de cargo y por área</p>`;
   html += `<div class="side-by-side">
     <div class="panel" style="margin-bottom:0;"><div class="panel-head"><h3>Nivel de cargo</h3></div><div>${levelCards.map(l=>`
-      <div class="alert-row">
-        <div class="alert-label">${esc(l.label)}<div class="alert-sub">${l.people} persona(s) · ${l.fd}/${l.ta} formaciones</div></div>
+      <div class="alert-row compact">
+        <div class="alert-label">${esc(l.label)}</div>
         <div class="alert-track"><div class="alert-fill" style="width:${Math.min(l.pct||0,100)}%; background:${barColor(l.pct)}"></div></div>
         <div class="alert-pct" style="color:${barColor(l.pct)}">${l.pct===null?'—':l.pct+'%'}</div>
       </div>`).join('')}
     </div></div>
     <div class="panel" style="margin-bottom:0;">
       <div class="panel-head"><h3>Área</h3></div>
-      <table>
+      <table class="compact-table">
         <thead><tr><th>Área</th><th style="text-align:right;">%</th></tr></thead>
         <tbody>
           ${areaCards.map(a=>`
