@@ -215,9 +215,12 @@
         <p class="hero-sub">Operaciones Venezuela</p>
       </div>
     </div>
-    <button class="sync-btn" id="btnRefresh" style="display:none;" title="Actualiza los datos desde la hoja de cálculo">
-      <span class="sync-dot" id="syncDot"></span>Refrescar
-    </button>
+    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+      <button class="sync-btn" id="btnRefresh" style="display:none;" title="Actualiza los datos desde la hoja de cálculo">
+        <span class="sync-dot" id="syncDot"></span><span id="btnRefreshLabel">Refrescar</span>
+      </button>
+      <span id="syncStatusText" style="display:none; font-size:11.5px; color:#B9C6DE;"></span>
+    </div>
   </div>
 </div>
 
@@ -829,9 +832,15 @@ const LIVE_URL = 'https://script.google.com/macros/s/AKfycbyVj_RBbJuQr8KVGsmFhoj
 async function refreshData(){
   const btn = document.getElementById('btnRefresh');
   const dot = document.getElementById('syncDot');
+  const label = document.getElementById('btnRefreshLabel');
+  const statusText = document.getElementById('syncStatusText');
   if(!LIVE_URL) return;
+
   btn.disabled = true;
   dot.className = 'sync-dot';
+  label.textContent = 'Actualizando…';
+  statusText.style.display = 'none';
+
   try{
     const res = await fetch(LIVE_URL);
     if(!res.ok) throw new Error('HTTP ' + res.status);
@@ -851,13 +860,21 @@ async function refreshData(){
     buildResumen();
     if(document.getElementById('cedulaInput').value.trim()) render(document.getElementById('cedulaInput').value);
     dot.className = 'sync-dot live';
+    label.textContent = 'Refrescar';
     btn.title = 'Datos actualizados desde la hoja (' + raw.length + ' filas)';
+    statusText.textContent = 'Actualizado: ' + raw.length + ' filas';
+    statusText.style.display = '';
+    console.log('Dashboard actualizado desde la hoja:', raw.length, 'filas');
   }catch(err){
     dot.className = 'sync-dot err';
+    label.textContent = 'Refrescar';
     btn.title = 'No se pudo actualizar: ' + err.message;
-    console.error('Error al refrescar datos del dashboard:', err.message);
+    statusText.textContent = 'Error: ' + err.message;
+    statusText.style.display = '';
+    console.error('Error al refrescar datos del dashboard:', err);
   }finally{
     btn.disabled = false;
+    setTimeout(()=>{ statusText.style.display = 'none'; }, 8000);
   }
 }
 
