@@ -358,9 +358,23 @@ function levelLabel(key){
 
 /* Build {idx, rows} from raw sheet-shaped rows (array of objects keyed by original column headers) */
 function buildFromRaw(raw){
+  // Soporta el formato compacto nuevo {headers, rows} y el formato viejo
+  // (arreglo de objetos), por si el script de Apps Script no se actualizó.
+  let dataRows;
+  if(raw && !Array.isArray(raw) && Array.isArray(raw.headers) && Array.isArray(raw.rows)){
+    const headers = raw.headers;
+    dataRows = raw.rows.map(arr=>{
+      const obj = {};
+      headers.forEach((h,i)=>{ obj[h] = arr[i]; });
+      return obj;
+    });
+  } else {
+    dataRows = raw;
+  }
+
   const idx = {};
   const grouped = {};
-  raw.forEach(row=>{
+  dataRows.forEach(row=>{
     const c = (row['CÉDULA']||'').toString().trim();
     if(!c) return;
     idx[c] = {
@@ -867,15 +881,19 @@ async function refreshData(){
     }
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
-    if(!Array.isArray(raw)){
-      if(raw && raw.error){
-        let msg = raw.error;
-        if(raw.pestañas_disponibles) msg += ' Pestañas disponibles: ' + raw.pestañas_disponibles.join(', ');
-        throw new Error(msg);
-      }
+    let rowCount;
+    if(Array.isArray(raw)){
+      rowCount = raw.length;
+    } else if(raw && Array.isArray(raw.headers) && Array.isArray(raw.rows)){
+      rowCount = raw.rows.length;
+    } else if(raw && raw.error){
+      let msg = raw.error;
+      if(raw.pestañas_disponibles) msg += ' Pestañas disponibles: ' + raw.pestañas_disponibles.join(', ');
+      throw new Error(msg);
+    } else {
       throw new Error('la respuesta no tiene el formato esperado (no es una lista de filas).');
     }
-    if(raw.length === 0) throw new Error('la pestaña no tiene filas de datos debajo del encabezado.');
+    if(rowCount === 0) throw new Error('la pestaña no tiene filas de datos debajo del encabezado.');
     const built = buildFromRaw(raw);
     IDX = built.idx; ROWS = built.rows;
     if(isRRHHUser) buildAprobados();
@@ -883,10 +901,10 @@ async function refreshData(){
     if(document.getElementById('cedulaInput').value.trim()) render(document.getElementById('cedulaInput').value);
     dot.className = 'sync-dot live';
     label.textContent = 'Refrescar';
-    btn.title = 'Datos actualizados desde la hoja (' + raw.length + ' filas)';
-    statusText.textContent = 'Actualizado: ' + raw.length + ' filas';
+    btn.title = 'Datos actualizados desde la hoja (' + rowCount + ' filas)';
+    statusText.textContent = 'Actualizado: ' + rowCount + ' filas';
     statusText.style.display = '';
-    console.log('Dashboard actualizado desde la hoja:', raw.length, 'filas');
+    console.log('Dashboard actualizado desde la hoja:', rowCount, 'filas');
   }catch(err){
     dot.className = 'sync-dot err';
     label.textContent = 'Refrescar';
