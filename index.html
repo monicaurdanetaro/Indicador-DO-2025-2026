@@ -680,6 +680,7 @@ function buildResumen(){
   foArr = foArr.filter(x => x.ta >= 3);
   foArr.sort((a,b)=> a.pct - b.pct);
   const worstFo = foArr.slice(0,6);
+  const bestFo = foArr.slice().sort((a,b)=> b.pct - a.pct).slice(0,6);
 
   let html = '';
   html += `<div class="totalizers" style="grid-template-columns:1fr;">
@@ -713,16 +714,30 @@ function buildResumen(){
     </div>
   </div>`;
 
-  html += `<div class="panel">
-    <div class="panel-head"><h3>Formaciones con menor cumplimiento</h3><span class="count">Mínimo 3 talleres</span></div>
-    <div>
-      ${worstFo.length===0 ? '<div class="empty-row">No hay suficientes datos para generar alertas.</div>' : worstFo.map(f=>`
-        <div class="alert-row">
-          <div class="alert-label">${esc(f.fo)}<div class="alert-sub">${f.fd} formados de ${f.ta} talleres</div></div>
-          <div class="alert-track"><div class="alert-fill" style="width:${Math.min(f.pct||0,100)}%; background:${barColor(f.pct)}"></div></div>
-          <div class="alert-pct" style="color:${barColor(f.pct)}">${f.pct}%</div>
-        </div>
-      `).join('')}
+  html += `<div class="side-by-side">
+    <div class="panel" style="margin-bottom:0;">
+      <div class="panel-head"><h3>Formaciones con menor cumplimiento</h3></div>
+      <div>
+        ${worstFo.length===0 ? '<div class="empty-row">No hay suficientes datos para generar alertas.</div>' : worstFo.map(f=>`
+          <div class="alert-row">
+            <div class="alert-label">${esc(f.fo)}<div class="alert-sub">${f.fd} formados de ${f.ta} talleres</div></div>
+            <div class="alert-track"><div class="alert-fill" style="width:${Math.min(f.pct||0,100)}%; background:${barColor(f.pct)}"></div></div>
+            <div class="alert-pct" style="color:${barColor(f.pct)}">${f.pct}%</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:0;">
+      <div class="panel-head"><h3>Formaciones con mayor cumplimiento</h3></div>
+      <div>
+        ${bestFo.length===0 ? '<div class="empty-row">No hay suficientes datos para generar alertas.</div>' : bestFo.map(f=>`
+          <div class="alert-row">
+            <div class="alert-label">${esc(f.fo)}<div class="alert-sub">${f.fd} formados de ${f.ta} talleres</div></div>
+            <div class="alert-track"><div class="alert-fill" style="width:${Math.min(f.pct||0,100)}%; background:${barColor(f.pct)}"></div></div>
+            <div class="alert-pct" style="color:${barColor(f.pct)}">${f.pct}%</div>
+          </div>
+        `).join('')}
+      </div>
     </div>
   </div>`;
 
@@ -842,7 +857,14 @@ async function refreshData(){
   statusText.style.display = 'none';
 
   try{
-    const res = await fetch(LIVE_URL);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(()=> controller.abort(), 15000);
+    let res;
+    try{
+      res = await fetch(LIVE_URL, { signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
     if(!Array.isArray(raw)){
@@ -868,8 +890,11 @@ async function refreshData(){
   }catch(err){
     dot.className = 'sync-dot err';
     label.textContent = 'Refrescar';
-    btn.title = 'No se pudo actualizar: ' + err.message;
-    statusText.textContent = 'Error: ' + err.message;
+    const msg = err.name === 'AbortError'
+      ? 'tiempo de espera agotado (15s). El Web App no respondió — revisa tu conexión o si sigue desplegado.'
+      : err.message;
+    btn.title = 'No se pudo actualizar: ' + msg;
+    statusText.textContent = 'Error: ' + msg;
     statusText.style.display = '';
     console.error('Error al refrescar datos del dashboard:', err);
   }finally{
