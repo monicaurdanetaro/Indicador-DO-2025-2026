@@ -49,7 +49,7 @@
   }
   .hero-left{ display:flex; align-items:center; gap:16px; }
   .logo-chip{ display:flex; align-items:center; }
-  .hero-left img{ height: 22px; display:block; }
+  .hero-left img{ height: 32px; display:block; }
   .hero-divider{ width:1px; height:28px; background: rgba(255,255,255,0.18); }
   h1{
     font-size: 17px;
@@ -93,9 +93,9 @@
     margin-bottom: 20px; overflow: hidden;
   }
   .panel-head{
-    padding: 14px 20px; border-bottom: 1px solid var(--blue-line);
+    padding: 14px 20px; border-bottom: 1px solid var(--line);
     display:flex; align-items:center; justify-content:space-between; gap: 12px; flex-wrap:wrap;
-    background: var(--blue-bg);
+    background: #fff;
   }
   .panel-head h3{ margin:0; font-size: 13.5px; font-weight: 600; color: var(--gray-900); }
   .panel-head .count{ font-size: 12px; color: var(--gray-400); font-weight:500; }
@@ -119,9 +119,11 @@
   .stat-foot{ font-size: 12.5px; color: var(--gray-600); margin-top: 8px; }
 
   /* score cards (individual) */
+  .side-by-side{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 780px){ .side-by-side{ grid-template-columns: 1fr; } }
   .scores{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; }
   @media (max-width: 700px){ .scores{ grid-template-columns: 1fr; } }
-  .score-card{ background:#fff; border: 1px solid var(--line); border-top: 3px solid var(--blue-line-strong); border-radius: 10px; padding: 18px 20px; }
+  .score-card{ background:#fff; border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
   .score-label{ font-size: 12px; font-weight: 500; color: var(--gray-600); margin-bottom: 10px; }
   .score-value{ font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
   .score-value.ok{ color: var(--green); }
@@ -138,24 +140,25 @@
   .avatar{ width: 36px; height:36px; border-radius: 50%; background: var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-weight: 600; font-size: 12.5px; flex-shrink:0; }
   .identity-name{ font-weight: 600; font-size: 14px; color: var(--gray-900); }
   .identity-meta{ color: var(--gray-600); font-size: 12px; margin-top:2px; }
-  .role-pill{ background: var(--blue-bg); color: var(--navy); font-weight: 600; font-size: 11.5px; padding: 5px 11px; border-radius: 6px; }
+  .role-pill{ background: var(--gray-100); color: var(--navy); font-weight: 600; font-size: 11.5px; padding: 5px 11px; border-radius: 6px; }
 
   /* filters */
-  .filters{ display:flex; gap: 12px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--blue-line); background: #F5F9FD; }
+  .filters{ display:flex; gap: 12px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--line); background: var(--gray-100); }
   .filters .f{ flex: 1 1 170px; min-width: 150px; }
   .filters label{ display:block; font-size: 11px; font-weight:600; color: var(--gray-600); margin-bottom:6px; }
   .filters input, .filters select{ width:100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); font-size: 13px; font-family: inherit; background:#fff; }
   .filters .clear{ align-self:flex-end; }
   .btn-mini{ border:1px solid var(--line); background: #fff; color: var(--gray-900); font-weight:500; font-size:12.5px; padding: 8px 14px; border-radius:6px; cursor:pointer; }
   .btn-mini:hover{ background: var(--gray-100); }
+  .btn-mini.primary{ background: var(--navy); color:#fff; border-color: var(--navy); }
+  .btn-mini.primary:hover{ background: var(--navy-ink); }
 
   /* tables */
   table{ width:100%; border-collapse: collapse; font-size: 13px; }
-  th{ text-align:left; padding: 9px 20px; font-size: 11px; color: var(--navy); border-bottom: 1px solid var(--blue-line); font-weight:600; background: var(--blue-bg); position:sticky; top:0;}
+  th{ text-align:left; padding: 9px 20px; font-size: 11px; color: var(--gray-600); border-bottom: 1px solid var(--line); font-weight:600; background:#fff; position:sticky; top:0;}
   td{ padding: 10px 20px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
   tr:last-child td{ border-bottom:none; }
-  tr:nth-child(even) td{ background: #FAFCFE; }
-  tr:hover td{ background: var(--blue-bg); }
+  tr:hover td{ background: var(--gray-100); }
   .table-scroll{ max-height: 460px; overflow:auto; }
   .pct-chip{ font-weight:600; font-size: 12.5px; }
   .pct-chip.ok{ color: var(--green); }
@@ -196,6 +199,7 @@
 
   footer.note{ text-align:center; color: var(--gray-400); font-size: 11.5px; margin-top: 30px; line-height: 1.7; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -230,7 +234,7 @@
 
   <div id="appContent" style="display:none;">
 
-  <p id="greeting" style="display:none; font-size:15px; font-weight:600; color:var(--navy-ink); margin: 0 0 18px;"></p>
+  <p id="greeting" style="display:none; font-size:15px; font-weight:600; color:var(--navy-ink); margin: 26px 0 18px;"></p>
 
   <div class="tabs" id="mainTabs">
     <button class="tab-btn" data-tab="aprobados" id="tabBtnAprobados" style="display:none;">Aprobados y Reprobados</button>
@@ -451,13 +455,35 @@ function supervisorResult(cedula){
 /* ============================================================
    TABS
    ============================================================ */
+function setTabUI(tabKey){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabpage').forEach(p=>p.classList.remove('active'));
+  const btn = document.querySelector('.tab-btn[data-tab="'+tabKey+'"]');
+  if(btn) btn.classList.add('active');
+  const page = document.getElementById('tab-'+tabKey);
+  if(page) page.classList.add('active');
+}
+function goToTab(tabKey){
+  setTabUI(tabKey);
+  history.pushState({ stage:'app', tab: tabKey }, '', '#'+tabKey);
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.tabpage').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-  });
+  btn.addEventListener('click', ()=> goToTab(btn.dataset.tab));
+});
+
+window.addEventListener('popstate', (e)=>{
+  const state = e.state;
+  if(!state || state.stage === 'gate'){
+    document.getElementById('appContent').style.display = 'none';
+    document.getElementById('btnRefresh').style.display = 'none';
+    document.getElementById('gateWrap').style.display = '';
+  } else if(state.stage === 'app'){
+    document.getElementById('gateWrap').style.display = 'none';
+    document.getElementById('appContent').style.display = 'block';
+    document.getElementById('btnRefresh').style.display = '';
+    setTabUI(state.tab);
+  }
 });
 
 /* ============================================================
@@ -498,7 +524,10 @@ function buildAprobados(){
   <div class="panel">
     <div class="panel-head">
       <h3>Detalle de supervisores</h3>
-      <span class="count" id="supCount">${SUP_RESULTS.length} registros</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="count" id="supCount">${SUP_RESULTS.length} registros</span>
+        <button class="btn-mini primary" id="btnExport">Descargar Excel</button>
+      </div>
     </div>
     <div class="filters">
       <div class="f"><label>Área</label>
@@ -518,6 +547,8 @@ function buildAprobados(){
 
   document.getElementById('tab-aprobados').innerHTML = html;
 
+  let currentFiltered = [];
+
   function renderTable(){
     const fArea = document.getElementById('fArea').value;
     const fCedula = document.getElementById('fCedula').value.trim().toLowerCase();
@@ -528,18 +559,19 @@ function buildAprobados(){
       if(fCedula && !s.cedula.toLowerCase().includes(fCedula)) return false;
       if(fNombre && !(s.rec.n||'').toLowerCase().includes(fNombre)) return false;
       return true;
+    }).slice().sort((a,b)=>{
+      const pa = a.pct===null?-1:a.pct, pb = b.pct===null?-1:b.pct;
+      return pb-pa;
     });
 
+    currentFiltered = filtered;
     document.getElementById('supCount').textContent = filtered.length + ' registros';
 
     let rowsHtml = '';
     if(filtered.length === 0){
       rowsHtml = `<tr><td colspan="8" class="empty-row">No hay supervisores que coincidan con estos filtros.</td></tr>`;
     } else {
-      filtered.slice().sort((a,b)=>{
-        const pa = a.pct===null?-1:a.pct, pb = b.pct===null?-1:b.pct;
-        return pb-pa;
-      }).forEach(s=>{
+      filtered.forEach(s=>{
         const statusHtml = s.pct===null
           ? `<span class="status-chip na">Sin datos</span>`
           : s.pct >= APPROVAL_THRESHOLD
@@ -567,6 +599,28 @@ function buildAprobados(){
     document.getElementById('fCedula').value='';
     document.getElementById('fNombre').value='';
     renderTable();
+  });
+  document.getElementById('btnExport').addEventListener('click', ()=>{
+    const data = currentFiltered.map(s=>({
+      'Cédula': s.cedula,
+      'Nombre': s.rec.n,
+      'Nivel': SUP_ROLES[s.role],
+      'Área': s.rec.ar,
+      'Tienda': s.rec.ti,
+      'Formado': s.fd,
+      'Talleres': s.ta,
+      '% Resultado': s.pct===null? '' : s.pct,
+      'Estado': s.pct===null ? 'Sin datos' : (s.pct >= APPROVAL_THRESHOLD ? 'Aprobado' : 'Reprobado'),
+    }));
+    if(typeof XLSX === 'undefined'){
+      alert('No se pudo cargar el módulo de Excel (revisa tu conexión a internet e intenta de nuevo).');
+      return;
+    }
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Supervisores');
+    const today = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, 'aprobados_reprobados_' + today + '.xlsx');
   });
   renderTable();
 }
@@ -733,11 +787,12 @@ function render(cedula){
     });
   }
 
-  html += `<div class="panel"><div class="panel-head"><h3>Cumplimiento de equipo por nivel de cargo</h3><span class="count">${levels.length} nivel(es)</span></div>
-    <div class="table-scroll"><table><thead><tr><th>Nivel de cargo</th><th>N° talleres</th><th>Formado</th><th>Total</th></tr></thead><tbody>${teamSummaryRows}</tbody></table></div></div>`;
-
-  html += `<div class="panel"><div class="panel-head"><h3>Detalle propio</h3><span class="count">${propioRows.length} registro(s)</span></div>
-    <div class="table-scroll"><table><thead><tr><th>Formación</th><th>Fecha</th><th>Estado</th><th>Mes</th></tr></thead><tbody>${propioDetail}</tbody></table></div></div>`;
+  html += `<div class="side-by-side" style="margin-bottom:20px;">
+    <div class="panel" style="margin-bottom:0;"><div class="panel-head"><h3>Detalle propio</h3><span class="count">${propioRows.length} registro(s)</span></div>
+      <div class="table-scroll"><table><thead><tr><th>Formación</th><th>Fecha</th><th>Estado</th><th>Mes</th></tr></thead><tbody>${propioDetail}</tbody></table></div></div>
+    <div class="panel" style="margin-bottom:0;"><div class="panel-head"><h3>Equipo por nivel de cargo</h3><span class="count">${levels.length} nivel(es)</span></div>
+      <div class="table-scroll"><table><thead><tr><th>Nivel de cargo</th><th>N° talleres</th><th>Formado</th><th>Total</th></tr></thead><tbody>${teamSummaryRows}</tbody></table></div></div>
+  </div>`;
 
   let colabRows = '';
   if(teamRows.length === 0){
@@ -795,15 +850,6 @@ document.getElementById('btnRefresh').addEventListener('click', refreshData);
    ============================================================ */
 let isRRHHUser = false;
 
-function activateTab(tabKey){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tabpage').forEach(p=>p.classList.remove('active'));
-  const btn = document.querySelector('.tab-btn[data-tab="'+tabKey+'"]');
-  if(btn) btn.classList.add('active');
-  const page = document.getElementById('tab-'+tabKey);
-  if(page) page.classList.add('active');
-}
-
 function handleGate(cedula){
   cedula = (cedula||'').trim();
   if(!cedula) return;
@@ -814,19 +860,33 @@ function handleGate(cedula){
   document.getElementById('appContent').style.display = 'block';
   document.getElementById('btnRefresh').style.display = '';
 
+  let initialTab;
   if(isRRHHUser){
     document.getElementById('tabBtnAprobados').style.display = '';
-    const greetEl = document.getElementById('greeting');
-    greetEl.textContent = '¡Hola, ' + firstNameOf(RRHH_NAMES[cedula]) + '!';
-    greetEl.style.display = '';
     buildAprobados();
-    activateTab('aprobados');
+    initialTab = 'aprobados';
   } else {
     document.getElementById('tabBtnAprobados').style.display = 'none';
-    document.getElementById('greeting').style.display = 'none';
-    activateTab('resumen');
+    initialTab = 'resumen';
   }
+
+  const greetEl = document.getElementById('greeting');
+  let greetName = null;
+  if(RRHH_NAMES[cedula]){
+    greetName = RRHH_NAMES[cedula];
+  } else if(IDX[cedula] && SUP_ROLES[IDX[cedula].cg]){
+    greetName = IDX[cedula].n;
+  }
+  if(greetName){
+    greetEl.textContent = '¡Hola, ' + firstNameOf(greetName) + '!';
+    greetEl.style.display = '';
+  } else {
+    greetEl.style.display = 'none';
+  }
+
   buildResumen();
+  setTabUI(initialTab);
+  history.pushState({ stage:'app', tab: initialTab }, '', '#'+initialTab);
 
   document.getElementById('cedulaInput').value = cedula;
   render(cedula);
@@ -838,6 +898,7 @@ document.getElementById('gateInput').addEventListener('keydown', (e)=>{ if(e.key
 /* Refresh data in the background as soon as the page loads, so it's ready by the time
    someone passes the cédula gate. This does not reveal any tab before the gate is passed. */
 window.addEventListener('DOMContentLoaded', ()=>{
+  history.replaceState({ stage:'gate' }, '', '#gate');
   refreshData();
   document.getElementById('gateInput').focus();
 });
