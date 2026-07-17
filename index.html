@@ -836,7 +836,15 @@ async function refreshData(){
     const res = await fetch(LIVE_URL);
     if(!res.ok) throw new Error('HTTP ' + res.status);
     const raw = await res.json();
-    if(!Array.isArray(raw) || raw.length === 0) throw new Error('sin filas');
+    if(!Array.isArray(raw)){
+      if(raw && raw.error){
+        let msg = raw.error;
+        if(raw.pestañas_disponibles) msg += ' Pestañas disponibles: ' + raw.pestañas_disponibles.join(', ');
+        throw new Error(msg);
+      }
+      throw new Error('la respuesta no tiene el formato esperado (no es una lista de filas).');
+    }
+    if(raw.length === 0) throw new Error('la pestaña no tiene filas de datos debajo del encabezado.');
     const built = buildFromRaw(raw);
     IDX = built.idx; ROWS = built.rows;
     if(isRRHHUser) buildAprobados();
@@ -847,6 +855,7 @@ async function refreshData(){
   }catch(err){
     dot.className = 'sync-dot err';
     btn.title = 'No se pudo actualizar: ' + err.message;
+    console.error('Error al refrescar datos del dashboard:', err.message);
   }finally{
     btn.disabled = false;
   }
