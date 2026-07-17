@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Prueba de conexión — Apps Script</title>
+<style>
+  body{ font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color:#222; }
+  h1{ font-size: 18px; }
+  button{ padding: 10px 20px; font-size: 15px; cursor:pointer; }
+  pre{ background:#f4f4f4; border:1px solid #ddd; padding:14px; white-space:pre-wrap; word-break:break-word; border-radius:6px; margin-top:16px; }
+  .ok{ color:#1a7a4c; }
+  .err{ color:#b3202f; }
+</style>
+</head>
+<body>
+  <h1>Prueba mínima de conexión al Web App de Apps Script</h1>
+  <p>Esta página no tiene nada del dashboard — solo intenta traer los datos de tu Web App y te muestra exactamente qué pasa. Sirve para saber si el problema es de tu red/navegador o del dashboard en sí.</p>
+  <button onclick="probar()">Probar conexión</button>
+  <pre id="out">Esperando…</pre>
+
+<script>
+const URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbyVj_RBbJuQr8KVGsmFhojYkZC7dNoQ5VSLXDqt9XPbjfJVu0AgyiGb3_Yrc5sej1QUVQ/exec';
+
+async function probar(){
+  const out = document.getElementById('out');
+  out.className = '';
+  const t0 = performance.now();
+  out.textContent = 'Conectando a:\n' + URL_APPS_SCRIPT + '\n\n(esperando respuesta, hasta 30 segundos...)';
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(()=> controller.abort(), 30000);
+
+  try{
+    const res = await fetch(URL_APPS_SCRIPT, { signal: controller.signal, cache: 'no-store' });
+    clearTimeout(timeoutId);
+    const ms = Math.round(performance.now() - t0);
+    const text = await res.text();
+
+    out.className = 'ok';
+    out.textContent =
+      '✅ LLEGÓ RESPUESTA en ' + ms + ' ms\n\n' +
+      'Status: ' + res.status + ' ' + res.statusText + '\n' +
+      'Content-Type: ' + res.headers.get('content-type') + '\n\n' +
+      'Primeros 500 caracteres del contenido:\n' +
+      text.slice(0, 500);
+  }catch(err){
+    clearTimeout(timeoutId);
+    const ms = Math.round(performance.now() - t0);
+    out.className = 'err';
+    out.textContent =
+      '❌ ERROR después de ' + ms + ' ms\n\n' +
+      'Tipo: ' + err.name + '\n' +
+      'Mensaje: ' + err.message;
+  }
+}
+</script>
+</body>
+</html>
