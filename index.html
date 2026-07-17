@@ -159,6 +159,8 @@
   td{ padding: 10px 20px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
   tr:last-child td{ border-bottom:none; }
   tr:hover td{ background: var(--gray-100); }
+  tr.row-no td{ background: var(--red-bg); }
+  tr.row-no:hover td{ background: #F5DEE1; }
   .table-scroll{ max-height: 460px; overflow:auto; }
   .pct-chip{ font-weight:600; font-size: 12.5px; }
   .pct-chip.ok{ color: var(--green); }
@@ -659,11 +661,15 @@ function buildResumen(){
     const g = computeGroup(rs);
     const people = new Set(rs.map(r=>r.c)).size;
     const label = key === 'Sin área registrada' ? key : 'Área ' + key;
-    return { label, ...g, people };
+    return { key, label, ...g, people };
   });
   areaCards.sort((a,b)=>{
-    const pa = a.pct===null ? 9999 : a.pct, pb = b.pct===null ? 9999 : b.pct;
-    return pa - pb;
+    const na = parseFloat(a.key), nb = parseFloat(b.key);
+    const aNum = !isNaN(na), bNum = !isNaN(nb);
+    if(aNum && bNum) return na - nb;
+    if(aNum) return -1;
+    if(bNum) return 1;
+    return a.key.localeCompare(b.key);
   });
 
   const byFo = {};
@@ -676,9 +682,9 @@ function buildResumen(){
   let html = '';
   html += `<div class="totalizers" style="grid-template-columns:1fr;">
     <div class="stat-card">
-      <div class="stat-label">% global de cumplimiento (formados / convocados)</div>
+      <div class="stat-label">% global de cumplimiento (formados / talleres)</div>
       <div class="stat-value navy">${global.pct===null?'Sin datos':global.pct+'%'}</div>
-      <div class="stat-foot">${global.fd} formaciones completadas de ${global.ta} convocatorias registradas en el plan</div>
+      <div class="stat-foot">${global.fd} formaciones completadas de ${global.ta} talleres registrados en el plan</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.min(global.pct||0,100)}%; background:${barColor(global.pct)}"></div></div>
     </div>
   </div>`;
@@ -693,20 +699,23 @@ function buildResumen(){
   </div></div>`;
 
   html += `<p class="eyebrow-label">Cumplimiento por área</p>`;
-  html += `<div class="panel"><div>${areaCards.map(a=>`
-    <div class="alert-row">
-      <div class="alert-label">${esc(a.label)}<div class="alert-sub">${a.people} persona(s) · ${a.fd}/${a.ta} formaciones</div></div>
-      <div class="alert-track"><div class="alert-fill" style="width:${Math.min(a.pct||0,100)}%; background:${barColor(a.pct)}"></div></div>
-      <div class="alert-pct" style="color:${barColor(a.pct)}">${a.pct===null?'—':a.pct+'%'}</div>
-    </div>`).join('')}
-  </div></div>`;
+  html += `<div class="panel" style="max-width:360px;">
+    <table>
+      <thead><tr><th>Área</th><th style="text-align:right;">%</th></tr></thead>
+      <tbody>
+        ${areaCards.map(a=>`
+          <tr><td>${esc(a.label)}</td><td style="text-align:right;"><span class="pct-chip ${pctChipClass(a.pct)}">${a.pct===null?'—':a.pct+'%'}</span></td></tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>`;
 
   html += `<div class="panel">
-    <div class="panel-head"><h3>Formaciones con menor cumplimiento</h3><span class="count">Mínimo 3 convocatorias</span></div>
+    <div class="panel-head"><h3>Formaciones con menor cumplimiento</h3><span class="count">Mínimo 3 talleres</span></div>
     <div>
       ${worstFo.length===0 ? '<div class="empty-row">No hay suficientes datos para generar alertas.</div>' : worstFo.map(f=>`
         <div class="alert-row">
-          <div class="alert-label">${esc(f.fo)}<div class="alert-sub">${f.fd} formados de ${f.ta} convocados</div></div>
+          <div class="alert-label">${esc(f.fo)}<div class="alert-sub">${f.fd} formados de ${f.ta} talleres</div></div>
           <div class="alert-track"><div class="alert-fill" style="width:${Math.min(f.pct||0,100)}%; background:${barColor(f.pct)}"></div></div>
           <div class="alert-pct" style="color:${barColor(f.pct)}">${f.pct}%</div>
         </div>
@@ -783,7 +792,7 @@ function render(cedula){
     propioDetail = `<tr><td colspan="4" class="empty-row">No hay formaciones propias registradas en este plan.</td></tr>`;
   } else {
     propioRows.slice().sort((a,b)=> (a.fo>b.fo?1:-1)).forEach(r=>{
-      propioDetail += `<tr><td class="name-cell">${esc(r.fo)}</td><td>${esc(r.fe)}</td><td><span class="dot ${r.fd?'yes':'no'}"></span>${r.fd?'Formado':'Pendiente'}</td><td>${esc(r.me)}</td></tr>`;
+      propioDetail += `<tr class="${r.fd?'':'row-no'}"><td class="name-cell">${esc(r.fo)}</td><td>${esc(r.fe)}</td><td><span class="dot ${r.fd?'yes':'no'}"></span>${r.fd?'Formado':'Pendiente'}</td><td>${esc(r.me)}</td></tr>`;
     });
   }
 
@@ -799,7 +808,7 @@ function render(cedula){
     colabRows = `<tr><td colspan="7" class="empty-row">No hay colaboradores asociados.</td></tr>`;
   } else {
     teamRows.slice().sort((a,b)=> (a.n<b.n?-1:a.n>b.n?1:0)).forEach(r=>{
-      colabRows += `<tr><td>${esc(r.c)}</td><td class="name-cell">${esc(r.n)}</td><td>${esc(r.cg)}</td><td>${esc(r.ti)}</td><td>${esc(r.fo)}</td><td>${esc(r.fe)}</td><td><span class="dot ${r.fd?'yes':'no'}"></span>${r.fd?'Sí':'No'}</td></tr>`;
+      colabRows += `<tr class="${r.fd?'':'row-no'}"><td>${esc(r.c)}</td><td class="name-cell">${esc(r.n)}</td><td>${esc(r.cg)}</td><td>${esc(r.ti)}</td><td>${esc(r.fo)}</td><td>${esc(r.fe)}</td><td><span class="dot ${r.fd?'yes':'no'}"></span>${r.fd?'Sí':'No'}</td></tr>`;
     });
   }
 
